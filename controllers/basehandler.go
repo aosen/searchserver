@@ -10,13 +10,13 @@ import (
 /*返回的JSON数据*/
 type Response struct {
 	Values interface{} `json:"result"`
-	Err    int         `json:"err"`
-	Errmsg string      `json:"errmsg"`
+	Err    int         `json:"code"`
+	Errmsg string      `json:"desc"`
 }
 
 var ERR = map[int]string{
-	0: "success",
-	1: "Invalid argument",
+	200: "success",
+	401: "Invalid argument",
 }
 
 type BaseHandler struct {

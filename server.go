@@ -98,8 +98,13 @@ var g kernel.G
 
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
+	//加载配置文件
 	loadConf()
+	debug, e := kernel.GetSetting(settings, "DEBUG")
+	checkError(e)
+	//挂载数据库
 	mountDB()
+	//挂载redis
 	mountRedis()
 	//初始化分词
 	var segmenter cut.Segmenter
@@ -117,9 +122,22 @@ func init() {
 	num, e5 := strconv.Atoi(tmp)
 	checkError(e5)
 	searcher.Init(search.EngineInitOptions{
-		Segmenter:               segmenter,
-		StopTokenFile:           stop,
-		UsePersistentStorage:    true,
+		Segmenter:     segmenter,
+		StopTokenFile: stop,
+		UsePersistentStorage: func() bool {
+			if debug == "True" {
+				return false
+			} else {
+				return true
+			}
+		}(),
+		IndexerInitOptions: &search.IndexerInitOptions{
+			IndexType: search.LocationsIndex,
+			BM25Parameters: &search.BM25Parameters{
+				K1: 2.0,
+				B:  0.75,
+			},
+		},
 		PersistentStorageFolder: store,
 		PersistentStorageShards: num,
 	})

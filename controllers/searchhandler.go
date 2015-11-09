@@ -20,27 +20,25 @@ type SearchRequest struct {
 	TimeOut int
 }
 
-var sr SearchRequest
-
-func (self *SearchHandler) Handle(w http.ResponseWriter, r *http.Request, g kernel.G) {
+func (self *SearchHandler) Handle(w http.ResponseWriter, r *http.Request, g kernel.G, sr SearchRequest) {
 	searcher, _ := g.DIY["searcher"].(search.Engine)
 	self.JsonResponse(w, searcher.Search(search.SearchRequest{
 		Text:    sr.Text,
 		Labels:  sr.Labels,
 		DocIds:  sr.DocIds,
 		Timeout: sr.TimeOut,
-	}), 0)
+	}), 200)
 }
 
-func (self *SearchHandler) checkArgument(text string, docids string, labels string, timeout string) bool {
+func (self *SearchHandler) checkArgument(text string, docids string, labels string, timeout string) (ok bool, sr SearchRequest) {
 	//检测参数合法性，合法返回True 不合法返回False
-	if text == "" && docids == "" && labels == "" {
-		return false
+	if text == "" && labels == "" || docids == "" {
+		return
 	} else {
 		if timeout != "" {
 			t, err := strconv.Atoi(timeout)
 			if err != nil {
-				return false
+				return
 			}
 			sr.TimeOut = t
 		}
@@ -50,19 +48,24 @@ func (self *SearchHandler) checkArgument(text string, docids string, labels stri
 		if labels != "" {
 			sr.Labels = strings.Split(labels, "-")
 		}
-		if docids != "" {
+		//生成docids范围内的数组切片
+		docidlist := strings.Split(docids, "-")
+		if len(docidlist) != 2 {
+			return
+		} else {
 			for _, id := range strings.Split(docids, "-") {
 				tmp, err := strconv.Atoi(id)
 				if err != nil {
-					return false
+					return
 				} else {
 					sr.DocIds = append(sr.DocIds, uint64(tmp))
 				}
 			}
+			log.Println(sr.DocIds)
 		}
 	}
-	log.Println("test")
-	return true
+	ok = true
+	return
 }
 
 func (self *SearchHandler) Post(w http.ResponseWriter, r *http.Request, g kernel.G) {
@@ -73,10 +76,10 @@ func (self *SearchHandler) Post(w http.ResponseWriter, r *http.Request, g kernel
 	labels := r.PostFormValue("tags")
 	timeout := r.PostFormValue("timeout")
 	log.Printf("Method: %s From Ip: %s", r.Method, r.RemoteAddr)
-	if !self.checkArgument(text, docids, labels, timeout) {
-		self.JsonResponse(w, nil, 1)
+	if ok, sr := self.checkArgument(text, docids, labels, timeout); !ok {
+		self.JsonResponse(w, nil, 401)
 	} else {
-		self.Handle(w, r, g)
+		self.Handle(w, r, g, sr)
 	}
 }
 
@@ -86,9 +89,9 @@ func (self *SearchHandler) Get(w http.ResponseWriter, r *http.Request, g kernel.
 	labels := r.URL.Query().Get("tags")
 	timeout := r.URL.Query().Get("timeout")
 	log.Printf("Method: %s From Ip: %s", r.Method, r.RemoteAddr)
-	if !self.checkArgument(text, docids, labels, timeout) {
-		self.JsonResponse(w, nil, 1)
+	if ok, sr := self.checkArgument(text, docids, labels, timeout); !ok {
+		self.JsonResponse(w, nil, 401)
 	} else {
-		self.Handle(w, r, g)
+		self.Handle(w, r, g, sr)
 	}
 }

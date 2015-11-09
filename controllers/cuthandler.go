@@ -45,7 +45,7 @@ func (self *CutHandler) Base(w http.ResponseWriter, r *http.Request, g kernel.G,
 	segmenter, _ := g.DIY["seg"].(cut.Segmenter)
 	//通用处理方法
 	if text == "" || (!strings.EqualFold(mode, "1") && !strings.EqualFold(mode, "0")) {
-		self.JsonResponse(w, nil, 1)
+		self.JsonResponse(w, nil, 401)
 	} else {
 		//整理为输出格式
 		s := []*Value{}
@@ -65,7 +65,7 @@ func (self *CutHandler) Base(w http.ResponseWriter, r *http.Request, g kernel.G,
 				})
 			}
 		}()
-		self.JsonResponse(w, s, 0)
+		self.JsonResponse(w, s, 200)
 	}
 }
 

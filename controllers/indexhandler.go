@@ -27,7 +27,7 @@ func (self *IndexHandler) Handle(w http.ResponseWriter, r *http.Request, g kerne
 		Content: data.Content,
 		Labels:  data.Labels,
 	})
-	self.JsonResponse(w, "", 0)
+	self.JsonResponse(w, "", 200)
 }
 
 func (self *IndexHandler) checkArgument(text string, docid string, labels string) bool {
@@ -55,7 +55,7 @@ func (self *IndexHandler) Post(w http.ResponseWriter, r *http.Request, g kernel.
 	labels := r.PostFormValue("tags")
 	log.Printf("Method: %s From Ip: %s", r.Method, r.RemoteAddr)
 	if !self.checkArgument(text, docid, labels) {
-		self.JsonResponse(w, nil, 1)
+		self.JsonResponse(w, nil, 401)
 	} else {
 		self.Handle(w, r, g)
 	}
@@ -67,7 +67,7 @@ func (self *IndexHandler) Get(w http.ResponseWriter, r *http.Request, g kernel.G
 	labels := r.URL.Query().Get("tags")
 	log.Printf("Method: %s From Ip: %s", r.Method, r.RemoteAddr)
 	if !self.checkArgument(text, docid, labels) {
-		self.JsonResponse(w, nil, 1)
+		self.JsonResponse(w, nil, 401)
 	} else {
 		self.Handle(w, r, g)
 	}
