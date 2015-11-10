@@ -61,7 +61,6 @@ func (self *SearchHandler) checkArgument(text string, docids string, labels stri
 					sr.DocIds = append(sr.DocIds, uint64(tmp))
 				}
 			}
-			log.Println(sr.DocIds)
 		}
 	}
 	ok = true

@@ -19,9 +19,7 @@ type IndexHandler struct {
 	BaseHandler
 }
 
-var data IndexedData
-
-func (self *IndexHandler) Handle(w http.ResponseWriter, r *http.Request, g kernel.G) {
+func (self *IndexHandler) Handle(w http.ResponseWriter, r *http.Request, g kernel.G, data IndexedData) {
 	searcher, _ := g.DIY["searcher"].(search.Engine)
 	searcher.IndexDocument(data.DocId, search.DocumentIndexData{
 		Content: data.Content,
@@ -30,20 +28,22 @@ func (self *IndexHandler) Handle(w http.ResponseWriter, r *http.Request, g kerne
 	self.JsonResponse(w, "", 200)
 }
 
-func (self *IndexHandler) checkArgument(text string, docid string, labels string) bool {
+func (self *IndexHandler) checkArgument(text string, docid string, labels string) (ok bool, data IndexedData) {
 	if text == "" || docid == "" {
-		return false
+		return
 	} else {
 		data.Content = text
 		id, err := strconv.Atoi(docid)
 		if err != nil {
-			return false
+			return
 		} else {
 			data.DocId = uint64(id)
-			return true
+			ok = true
+			return
 		}
 		data.Labels = strings.Split(labels, "-")
-		return true
+		ok = true
+		return
 	}
 }
 
@@ -54,10 +54,10 @@ func (self *IndexHandler) Post(w http.ResponseWriter, r *http.Request, g kernel.
 	docid := r.PostFormValue("docid")
 	labels := r.PostFormValue("tags")
 	log.Printf("Method: %s From Ip: %s", r.Method, r.RemoteAddr)
-	if !self.checkArgument(text, docid, labels) {
+	if ok, data := self.checkArgument(text, docid, labels); !ok {
 		self.JsonResponse(w, nil, 401)
 	} else {
-		self.Handle(w, r, g)
+		self.Handle(w, r, g, data)
 	}
 }
 
@@ -66,9 +66,9 @@ func (self *IndexHandler) Get(w http.ResponseWriter, r *http.Request, g kernel.G
 	docid := r.URL.Query().Get("docid")
 	labels := r.URL.Query().Get("tags")
 	log.Printf("Method: %s From Ip: %s", r.Method, r.RemoteAddr)
-	if !self.checkArgument(text, docid, labels) {
+	if ok, data := self.checkArgument(text, docid, labels); !ok {
 		self.JsonResponse(w, nil, 401)
 	} else {
-		self.Handle(w, r, g)
+		self.Handle(w, r, g, data)
 	}
 }
