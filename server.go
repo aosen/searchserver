@@ -115,12 +115,6 @@ func init() {
 	checkError(e2)
 	//初始化搜索引擎
 	var searcher search.Engine
-	store, e3 := kernel.GetSetting(settings, "INDEXSTOREPATH")
-	checkError(e3)
-	tmp, e4 := kernel.GetSetting(settings, "INDEXSTORENUM")
-	checkError(e4)
-	num, e5 := strconv.Atoi(tmp)
-	checkError(e5)
 	searcher.Init(search.EngineInitOptions{
 		Segmenter:     segmenter,
 		StopTokenFile: stop,
@@ -138,8 +132,11 @@ func init() {
 				B:  0.75,
 			},
 		},
-		PersistentStorageFolder: store,
-		PersistentStorageShards: num,
+		SearchPipline: search.InitMongo(
+			"search",
+			4,
+			"localhost:27017",
+			"search_"),
 	})
 	g = kernel.G{
 		//可以处理的http方法字典

@@ -22,6 +22,12 @@ type SearchRequest struct {
 
 func (self *SearchHandler) Handle(w http.ResponseWriter, r *http.Request, g kernel.G, sr SearchRequest) {
 	searcher, _ := g.DIY["searcher"].(search.Engine)
+	log.Println(searcher.Search(search.SearchRequest{
+		Text:    sr.Text,
+		Labels:  sr.Labels,
+		DocIds:  sr.DocIds,
+		Timeout: sr.TimeOut,
+	}))
 	self.JsonResponse(w, searcher.Search(search.SearchRequest{
 		Text:    sr.Text,
 		Labels:  sr.Labels,

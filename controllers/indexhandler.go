@@ -54,6 +54,7 @@ func (self *IndexHandler) Post(w http.ResponseWriter, r *http.Request, g kernel.
 	docid := r.PostFormValue("docid")
 	labels := r.PostFormValue("tags")
 	log.Printf("Method: %s From Ip: %s", r.Method, r.RemoteAddr)
+	log.Println(text, docid, labels)
 	if ok, data := self.checkArgument(text, docid, labels); !ok {
 		self.JsonResponse(w, nil, 401)
 	} else {
