@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"github.com/aosen/cut"
 	"github.com/aosen/kernel"
 	"github.com/aosen/search"
 	_ "github.com/go-sql-driver/mysql"
@@ -107,7 +106,7 @@ func init() {
 	//挂载redis
 	mountRedis()
 	//初始化分词
-	var segmenter cut.Segmenter
+	var segmenter search.Segmenter
 	dict, e1 := kernel.GetSetting(settings, "DICT")
 	checkError(e1)
 	segmenter.LoadDictionary(dict)
@@ -115,6 +114,20 @@ func init() {
 	checkError(e2)
 	//初始化搜索引擎
 	var searcher search.Engine
+	//获取mongodb集合数
+	indextmp, e3 := kernel.GetSetting(settings, "INDEXSTORENUM")
+	checkError(e3)
+	indexstorenum, err := strconv.Atoi(indextmp)
+	checkError(err)
+	//获取mongodb库名
+	mongodbname, e4 := kernel.GetSetting(settings, "MONGODBNAME")
+	checkError(e4)
+	//获取mongodb连接url
+	mongodburl, e5 := kernel.GetSetting(settings, "MONGODBURL")
+	checkError(e5)
+	//获取mongodb集合前缀
+	collectionprefix, e5 := kernel.GetSetting(settings, "COLLECTIONPREFIX")
+	checkError(e5)
 	searcher.Init(search.EngineInitOptions{
 		Segmenter:     segmenter,
 		StopTokenFile: stop,
@@ -133,10 +146,10 @@ func init() {
 			},
 		},
 		SearchPipline: search.InitMongo(
-			"search",
-			4,
-			"localhost:27017",
-			"search_"),
+			mongodbname,
+			indexstorenum,
+			mongodburl,
+			collectionprefix),
 	})
 	g = kernel.G{
 		//可以处理的http方法字典
