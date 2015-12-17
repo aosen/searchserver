@@ -21,8 +21,8 @@ url:
 package controllers
 
 import (
-	"github.com/aosen/cut"
 	"github.com/aosen/kernel"
+	"github.com/aosen/search"
 	"log"
 	"net/http"
 	"strings"
@@ -32,17 +32,12 @@ type CutHandler struct {
 	BaseHandler
 }
 
-var (
-	//生成分词器对象
-	segmenter = cut.Segmenter{}
-)
-
 func (self *CutHandler) Base(w http.ResponseWriter, r *http.Request, g kernel.G, text string, mode string) {
 	type Value struct {
 		Text string `json:"text"`
 		Pos  string `json:"pos"`
 	}
-	segmenter, _ := g.DIY["seg"].(cut.Segmenter)
+	segmenter, _ := g.DIY["seg"].(search.SearchSegmenter)
 	//通用处理方法
 	if text == "" || (!strings.EqualFold(mode, "1") && !strings.EqualFold(mode, "0")) {
 		self.JsonResponse(w, nil, 401)
@@ -60,8 +55,8 @@ func (self *CutHandler) Base(w http.ResponseWriter, r *http.Request, g kernel.G,
 					}
 				}()) {
 				s = append(s, &Value{
-					Text: seg.Token().Text(),
-					Pos:  seg.Token().Pos(),
+					Text: seg.GetToken().GetText(),
+					Pos:  seg.GetToken().GetPos(),
 				})
 			}
 		}()

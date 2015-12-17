@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/aosen/kernel"
 	"github.com/aosen/search"
+	"github.com/aosen/search/pipline"
+	"github.com/aosen/search/segmenter"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/larspensjo/config"
 	"gopkg.in/redis.v3"
@@ -105,13 +107,12 @@ func init() {
 	mountDB()
 	//挂载redis
 	mountRedis()
-	//初始化分词
-	var segmenter search.Segmenter
 	dict, e1 := kernel.GetSetting(settings, "DICT")
 	checkError(e1)
-	segmenter.LoadDictionary(dict)
 	stop, e2 := kernel.GetSetting(settings, "STOP")
 	checkError(e2)
+	//初始化分词, 采用引擎自带分词器
+	seg := segmenter.InitChinaCut(dict)
 	//初始化搜索引擎
 	var searcher search.Engine
 	//获取mongodb集合数
@@ -130,7 +131,7 @@ func init() {
 	checkError(e5)
 	searcher.Init(search.EngineInitOptions{
 		//分词器采用引擎自带的分词器
-		Segmenter:     segmenter,
+		Segmenter:     seg,
 		StopTokenFile: stop,
 		UsePersistentStorage: func() bool {
 			if debug == "True" {
@@ -147,7 +148,7 @@ func init() {
 			},
 		},
 		//pipline采用引擎自带的mongo pipline
-		SearchPipline: search.InitMongo(
+		SearchPipline: pipline.InitMongo(
 			mongodbname,
 			indexstorenum,
 			mongodburl,
@@ -171,7 +172,7 @@ func init() {
 		CC:             cc,
 		Settings:       settings,
 		DIY: map[string]interface{}{
-			"seg":      segmenter,
+			"seg":      seg,
 			"searcher": searcher,
 		},
 	}
