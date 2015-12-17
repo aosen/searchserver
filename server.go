@@ -129,6 +129,7 @@ func init() {
 	collectionprefix, e5 := kernel.GetSetting(settings, "COLLECTIONPREFIX")
 	checkError(e5)
 	searcher.Init(search.EngineInitOptions{
+		//分词器采用引擎自带的分词器
 		Segmenter:     segmenter,
 		StopTokenFile: stop,
 		UsePersistentStorage: func() bool {
@@ -145,6 +146,7 @@ func init() {
 				B:  0.75,
 			},
 		},
+		//pipline采用引擎自带的mongo pipline
 		SearchPipline: search.InitMongo(
 			mongodbname,
 			indexstorenum,
