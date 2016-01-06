@@ -4,18 +4,21 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"github.com/aosen/kernel"
-	"github.com/aosen/search"
-	"github.com/aosen/search/pipline"
-	"github.com/aosen/search/segmenter"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/larspensjo/config"
-	"gopkg.in/redis.v3"
 	"log"
 	"net/http"
 	"runtime"
 	"searchserver/routers"
 	"strconv"
+
+	"github.com/aosen/kernel"
+	"github.com/aosen/search"
+	"github.com/aosen/search/indexer"
+	"github.com/aosen/search/pipline"
+	"github.com/aosen/search/ranker"
+	"github.com/aosen/search/segmenter"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/larspensjo/config"
+	"gopkg.in/redis.v3"
 )
 
 //所有请求都会经过的开始处理方法
@@ -153,6 +156,14 @@ func init() {
 			indexstorenum,
 			mongodburl,
 			collectionprefix),
+		//索引器接口实现，采用自带的wukong索引器
+		CreateIndexer: func() search.SearchIndexer {
+			return indexer.NewWuKongIndexer()
+		},
+		//排序器生成方法
+		CreateRanker: func() search.SearchRanker {
+			return ranker.NewWuKongRanker()
+		},
 	})
 	g = kernel.G{
 		//可以处理的http方法字典
