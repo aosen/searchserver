@@ -1,12 +1,14 @@
 package controllers
 
 import (
-	"github.com/aosen/kernel"
-	"github.com/aosen/search"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/aosen/kernel"
+	"github.com/aosen/search"
+	"github.com/aosen/search/scorer"
 )
 
 type SearchHandler struct {
@@ -27,6 +29,9 @@ func (self *SearchHandler) Handle(w http.ResponseWriter, r *http.Request, g kern
 		Labels:  sr.Labels,
 		DocIds:  sr.DocIds,
 		Timeout: sr.TimeOut,
+		RankOptions: &search.RankOptions{
+			SearchScorer: scorer.NewBM25Scorer(),
+		},
 	}), 200)
 }
 
