@@ -69,8 +69,8 @@ func mountDB() *sql.DB {
 	dbinfo, err := kernel.GetSetting(settings, "DBINFO")
 	checkError(err)
 	db, _ = sql.Open("mysql", dbinfo)
-	db.SetMaxOpenConns(2000)
-	db.SetMaxIdleConns(1000)
+	db.SetMaxOpenConns(30)
+	db.SetMaxIdleConns(30)
 	checkError(db.Ping())
 	return db
 }
