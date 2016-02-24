@@ -13,7 +13,7 @@ import (
 	"github.com/aosen/kernel"
 	"github.com/aosen/search"
 	"github.com/aosen/search/indexer"
-	"github.com/aosen/search/pipline"
+	"github.com/aosen/search/pipeline"
 	"github.com/aosen/search/ranker"
 	"github.com/aosen/search/segmenter"
 	_ "github.com/go-sql-driver/mysql"
@@ -151,7 +151,7 @@ func init() {
 			},
 		},
 		//pipline采用引擎自带的mongo pipline
-		SearchPipline: pipline.InitMongo(
+		SearchPipline: pipeline.InitMongo(
 			mongodbname,
 			indexstorenum,
 			mongodburl,
